@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glance</title>
+<style>
+/* Go Mono advances 1229/2048 em; scale ASCII to an exact half Chinese cell. */
+@font-face{font-family:GlanceNoteLatin;src:url('/note-latin.ttf') format('truetype');unicode-range:U+0020-007E;size-adjust:83.3198%;font-display:swap}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f1ec;color:#242723;font:600 15px system-ui,-apple-system,sans-serif}
+main{max-width:1360px;margin:auto;padding:40px 32px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+h1{font-size:28px;letter-spacing:-1px;margin:0 0 8px}p{color:#666b64;margin:0}
+.tag{padding:8px 12px;background:#e2e6da;border-radius:6px;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.stat{background:#fff;border:1px solid #d9dcd2;padding:20px;border-radius:10px}
+.stat span{display:block;color:#6c7169;font-size:13px}
+.stat strong{display:block;font-size:21px;margin:10px 0}.stat small{color:#73786e}
+.frame{max-width:900px;margin-inline:auto;padding:12px;background:#fff;border:1px solid #d9dcd2;box-shadow:0 12px 38px #2028200a;border-radius:8px}
+.workspace{display:grid;grid-template-columns:minmax(380px,.9fr) minmax(0,1.1fr);gap:24px;align-items:start}
+.editor{padding:24px;background:#fff;border:1px solid #d9dcd2;border-radius:10px;position:sticky;top:20px;container-type:inline-size}
+h2{margin:0 0 10px;font-size:21px}.hint{font-size:13px;line-height:1.7}
+.notes{display:grid;grid-template-columns:repeat(2,minmax(214px,1fr));gap:16px;margin:20px 0}
+@container(max-width:443px){.notes{grid-template-columns:1fr}}
+/* Small metric allowance accommodates CJK fallback rounding, not an extra cell. */
+.note label{display:block;margin-bottom:8px}.note textarea{display:block;box-sizing:content-box;width:calc(7em + 4px);height:6em;padding:12px;border:1px solid #b9beb2;border-radius:6px;resize:none;overflow:auto;background:#fffef9;color:#242723;font:500 26px/1.5 GlanceNoteLatin,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;white-space:pre-wrap;word-break:break-all;line-break:anywhere;overflow-wrap:anywhere;tab-size:2}
+.note textarea:focus{outline:2px solid #526846;outline-offset:2px}.note small{display:block;margin-top:6px;color:#6c7169;min-height:32px;font-size:12px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}button{padding:11px 16px;border:1px solid #bdc4b5;border-radius:6px;font:inherit;cursor:pointer;background:#fff;color:#35452b}button.primary{background:#35452b;border-color:#35452b;color:#fff}button:disabled{opacity:.45;cursor:default}
+#notes-message{margin-top:14px;font-size:13px;line-height:1.6;min-height:42px;white-space:pre-wrap}.note small.bad,#notes-message.bad{color:#955326}
+img{display:block;width:100%;height:auto;aspect-ratio:3/4}
+footer{margin-top:18px;color:#777f73;font-size:13px}.bad{color:#955326}
+@media(max-width:960px){.workspace{grid-template-columns:1fr}.editor{position:static}.frame{width:100%}}
+@media(max-width:650px){main{padding:20px 12px}.stats{grid-template-columns:1fr}header{align-items:flex-start}.tag{display:none}}
+</style>
+<main><header><div><h1>Glance 看板管理</h1><p>编辑便签，查看 E1003 待同步画面</p></div><div class="tag">仅本机可访问</div></header>
+<div class="stats"><div class="stat"><span>官方额度</span><strong id="quota">等待同步</strong><small id="quota-time">尚无成功数据</small></div><div class="stat"><span>任务活动</span><strong id="activity">等待同步</strong><small id="activity-time">尚无成功数据</small></div><div class="stat"><span>E1003 连接</span><strong id="device">尚未拉取</strong><small id="device-time">等待设备连接</small></div></div>
+<div class="workspace"><form class="editor" id="notes-form"><h2>四张便签</h2><p class="hint">输入框每行 7 个汉字，共 4 行，最多 28 字；英文和数字占半字宽。<br>支持换行、留空；自动折行不改原文，手动换行也占行，超出容量不能保存。</p>
+<div class="notes">
+<div class="note"><label for="note-0">左上</label><textarea id="note-0" rows="4" spellcheck="false" aria-describedby="count-0" disabled></textarea><small id="count-0"></small></div>
+<div class="note"><label for="note-1">右上</label><textarea id="note-1" rows="4" spellcheck="false" aria-describedby="count-1" disabled></textarea><small id="count-1"></small></div>
+<div class="note"><label for="note-2">左下</label><textarea id="note-2" rows="4" spellcheck="false" aria-describedby="count-2" disabled></textarea><small id="count-2"></small></div>
+<div class="note"><label for="note-3">右下</label><textarea id="note-3" rows="4" spellcheck="false" aria-describedby="count-3" disabled></textarea><small id="count-3"></small></div>
+</div><div class="actions"><button class="primary" type="submit" id="save-notes" disabled>保存并更新预览</button><button type="button" id="reload-notes">重新载入</button></div><p id="notes-message" role="status" aria-live="polite">正在读取已保存的便签…</p></form>
+<div class="frame"><img id="frame" alt="待同步数据的竖屏首页预览，1404 × 1872" width="1404" height="1872" src="/frame.png"></div></div><footer id="footer">自动检查更新；只有画面变化才更新预览。任务列表密度仍待实机确认。</footer></main>
+<script>
+let hash='';const text=(id,value)=>document.getElementById(id).textContent=value;
+const inputs=Array.from({length:4},(_,i)=>document.getElementById('note-'+i));
+let savedNotes=null,notesRevision='',notesToken='',saving=false;
+const currentNotes=()=>inputs.map(input=>input.value.replace(/\r\n?/g,'\n'));
+const dirty=()=>savedNotes!==null&&JSON.stringify(currentNotes())!==JSON.stringify(savedNotes);
+const message=(value,bad=false)=>{text('notes-message',value);document.getElementById('notes-message').className=bad?'bad':''};
+function updateEditor(){const values=currentNotes();let valid=true;
+values.forEach((value,i)=>{const m=noteMetrics(value);valid=valid&&m.lines<=4;text('count-'+i,m.units/2+' / 28 汉字宽度 · '+m.lines+' / 4 行'+(m.lines>4?' · 超出，不能保存':''));document.getElementById('count-'+i).className=m.lines>4?'bad':'';inputs[i].setAttribute('aria-invalid',m.lines>4?'true':'false')});
+inputs.forEach(input=>input.disabled=saving||savedNotes===null);document.getElementById('save-notes').disabled=saving||savedNotes===null||!dirty()||!valid;document.getElementById('reload-notes').disabled=saving;
+}
+function noteMetrics(value){let lines=1,width=0,units=0;for(const ch of value){if(ch==='\n'){lines++;width=0;continue}const w=ch.codePointAt(0)<128?1:2;if(width+w>14){lines++;width=0}width+=w;units+=w}return{lines,units}}
+async function loadNotes(){if(saving)return;if(dirty()&&!confirm('重新载入会放弃尚未保存的修改，继续吗？'))return;
+saving=true;updateEditor();try{const r=await fetch('/api/notes',{cache:'no-store'});if(!r.ok)throw Error(r.status===404?'当前服务未开启便签编辑，请使用 USB 版服务。':'读取失败，请检查服务后重试。');const s=await r.json();savedNotes=s.notes;notesRevision=s.revision;notesToken=s.token;inputs.forEach((input,i)=>input.value=s.notes[i]);message('已载入。修改后点击保存，设备离线时也会保留设置。')}
+catch(e){message(e.message,true)}finally{saving=false;updateEditor()}}
+inputs.forEach(input=>input.addEventListener('input',()=>{updateEditor();message(dirty()?'有未保存的修改。':'与已保存内容一致。')}));
+document.getElementById('reload-notes').addEventListener('click',loadNotes);
+document.getElementById('notes-form').addEventListener('submit',async event=>{event.preventDefault();if(saving||!savedNotes||!dirty())return;const notes=currentNotes();if(notes.some(note=>noteMetrics(note).lines>4))return;saving=true;updateEditor();message('正在保存…');
+try{const r=await fetch('/api/notes',{method:'POST',headers:{'Content-Type':'application/json','X-Notes-Token':notesToken},body:JSON.stringify({notes,revision:notesRevision})});if(!r.ok)throw Error(r.status===403?'编辑会话已失效，请重新载入便签后再保存。':await r.text());const s=await r.json();savedNotes=s.notes;notesRevision=s.revision;notesToken=s.token;message('已保存，本机预览已更新。设备连接后会自动同步，无需重启服务。');await refresh()}
+catch(e){message(e.message||'保存未确认，请重新载入核对；当前输入仍保留。',true)}finally{saving=false;updateEditor()}});
+window.addEventListener('beforeunload',event=>{if(dirty()){event.preventDefault();event.returnValue=''}});
+loadNotes();
+const date=t=>!t||t.startsWith('0001')?'尚无成功数据':new Date(t).toLocaleString('zh-CN');
+async function refresh(){try{
+const r=await fetch('/status',{cache:'no-store'});if(!r.ok)throw Error();const s=await r.json();
+for(const [id,key]of [['quota','quota_status'],['activity','activity_status']]){const v=s.dashboard[key];text(id,({fresh:'已同步',stale:'数据已过期',unavailable:'暂不可用'})[v.state]||'等待同步');document.getElementById(id).className=v.state==='fresh'?'':'bad';text(id+'-time','最后成功：'+date(v.last_success))}
+if(s.usb){const u=s.usb;text('device',({connected:'USB 已连接',disconnected:'USB 已断开',unpaired:'USB 未配对',demo:'演示 · 未连接硬件'})[u.state]||'等待 USB');text('device-time','最近握手：'+date(u.last_seen)+(u.state==='connected'?' · 设备第 '+(u.page+1)+' 页':''))}
+else{const hasPull=s.last_device_pull&&!s.last_device_pull.startsWith('0001');text('device',hasPull?(Date.now()-Date.parse(s.last_device_pull)<90000?'最近有连接':'连接已过期'):'尚未拉取');text('device-time','最近拉取：'+date(s.last_device_pull))}
+if(s.sha256&&hash!==s.sha256){hash=s.sha256;document.getElementById('frame').src='/frame.png?v='+hash}
+text('footer',(s.usb?'同套设备绘图代码 · 待同步数据首页预览（不是设备截图） · ':'')+'画面内容更新：'+date(s.dashboard.frame_updated_at)+' · '+(s.dashboard.privacy?'隐私模式':'显示任务标题'))
+}catch{text('footer','后端暂时无法连接，保留最后画面。')}}refresh();setInterval(refresh,5000);
+</script></html>

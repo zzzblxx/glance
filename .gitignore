@@ -1,0 +1,27 @@
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+credentials/
+
+# Local runtime/build artifacts
+bin/
+dist/
+var/
+*.log
+.DS_Store
+
+# PlatformIO
+firmware/**/.pio/
+firmware/**/generated/
+.venv-build/
+
+# Private configuration, flash backups and development session records
+config.json
+factory-backup/
+factory-backups/
+.grill/
+.develop/
+.cleanup-*/

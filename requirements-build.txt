@@ -1,0 +1,3 @@
+platformio==6.1.19
+esptool==5.1.0
+pyinstaller==6.16.0
